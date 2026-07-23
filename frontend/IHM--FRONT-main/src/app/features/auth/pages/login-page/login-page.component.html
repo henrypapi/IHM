@@ -1,0 +1,59 @@
+<main class="login-page">
+  <section class="login-brand" aria-label="Identidad del sistema">
+    <p class="login-brand__eyebrow">Mesa de ayuda institucional</p>
+    <h1>Gestión incidencias</h1>
+    <p class="login-brand__copy">
+      Plataforma para registrar, priorizar y dar seguimiento a solicitudes e incidencias.
+    </p>
+  </section>
+
+  <section class="login-card" aria-labelledby="login-title">
+    <div class="login-card__header">
+      <div class="login-card__logo">IHM</div>
+      <h2 id="login-title">Inicia sesion con tu cuenta</h2>
+      <p>Accede con tus credenciales registradas.</p>
+    </div>
+
+    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="submit()">
+      <div class="form-field">
+        <label for="email">Correo</label>
+        <input
+          id="email"
+          type="text"
+          formControlName="email"
+          autocomplete="username"
+          placeholder="correo@institucion.edu o admin"
+          [attr.aria-invalid]="hasFieldError('email')"
+        />
+        @if (hasFieldError('email')) {
+          <p class="field-error" role="alert">Ingresa tu correo o nombre de usuario.</p>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="password">Contrasena</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="Ingresa tu contrasena"
+          [attr.aria-invalid]="hasFieldError('password')"
+        />
+        @if (hasFieldError('password')) {
+          <p class="field-error" role="alert">Ingresa tu contrasena.</p>
+        }
+      </div>
+
+      @if (serverError()) {
+        <div class="server-error" role="alert">
+          {{ serverError() }}
+        </div>
+      }
+
+      <button class="submit-button" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Ingresando...' : 'Iniciar sesion' }}
+      </button>
+    </form>
+  </section>
+</main>

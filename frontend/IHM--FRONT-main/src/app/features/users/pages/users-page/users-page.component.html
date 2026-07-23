@@ -1,0 +1,174 @@
+<section class="users-page">
+  <header class="users-page__header">
+    <div>
+      <p class="users-page__eyebrow">Administración</p>
+      <h1>Usuarios</h1>
+    </div>
+    <div class="users-page__actions">
+      <button type="button" class="btn btn--primary" (click)="startCreate()">
+        Crear usuario
+      </button>
+    </div>
+  </header>
+
+  @if (successMessage()) {
+    <p class="feedback feedback--success">{{ successMessage() }}</p>
+  }
+
+  @if (errorMessage()) {
+    <p class="feedback feedback--error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <h2>Listado</h2>
+        <p>{{ users().length }} usuario(s) cargado(s).</p>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <p class="feedback">Cargando usuarios...</p>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Celular</th>
+              <th>Roles</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.id) {
+              <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.nombre }} {{ user.apellido }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.celular || '-' }}</td>
+                <td>{{ user.roles.join(', ') }}</td>
+                <td class="actions-cell">
+                  <button type="button" class="btn btn--secondary btn--small" (click)="startEdit(user)">Editar</button>
+                  <button
+                    type="button"
+                    class="btn button-danger btn--small"
+                    (click)="startDelete(user)"
+                    [disabled]="actionUserId() === user.id"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6">No hay usuarios para mostrar.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <!-- Modals -->
+  <app-modal #createModal title="Crear usuario" maxWidth="600px">
+    <form class="grid-form" [formGroup]="createForm" (ngSubmit)="submitCreate()">
+      <p style="margin-bottom: 1.5rem; color: #64748b;">Alta rápida para administradores, técnicos o usuarios finales.</p>
+      
+      <label class="form-field">
+        <span>Correo</span>
+        <input type="email" formControlName="email" />
+        @if (createForm.controls.email.invalid && createForm.controls.email.touched) {
+          <span class="feedback--error" style="font-size: 0.85rem;">Correo inválido o requerido</span>
+        }
+      </label>
+
+      <label class="form-field">
+        <span>Password</span>
+        <input type="password" formControlName="password" />
+        @if (createForm.controls.password.invalid && createForm.controls.password.touched) {
+          <span class="feedback--error" style="font-size: 0.85rem;">Mínimo 8 caracteres</span>
+        }
+      </label>
+
+      <label class="form-field">
+        <span>Nombre</span>
+        <input type="text" formControlName="nombre" />
+        @if (createForm.controls.nombre.invalid && createForm.controls.nombre.touched) {
+          <span class="feedback--error" style="font-size: 0.85rem;">Nombre requerido</span>
+        }
+      </label>
+
+      <label class="form-field">
+        <span>Apellido</span>
+        <input type="text" formControlName="apellido" />
+        @if (createForm.controls.apellido.invalid && createForm.controls.apellido.touched) {
+          <span class="feedback--error" style="font-size: 0.85rem;">Apellido requerido</span>
+        }
+      </label>
+
+      <label class="form-field">
+        <span>Celular</span>
+        <input type="text" formControlName="celular" />
+        @if (createForm.controls.celular.invalid && createForm.controls.celular.touched) {
+          <span class="feedback--error" style="font-size: 0.85rem;">Debe tener exactamente 9 dígitos</span>
+        }
+      </label>
+
+      <label class="form-field">
+        <span>Rol</span>
+        <select formControlName="roles">
+          <option [value]="ROLES.usuario">Usuario</option>
+          <option [value]="ROLES.soporte">Técnico</option>
+          <option [value]="ROLES.admin">Administrador</option>
+        </select>
+      </label>
+
+      <div class="form-actions form-field--full" style="margin-top: 1rem;">
+        <button type="submit" class="btn btn--primary" [disabled]="loading()">Crear usuario</button>
+        <button type="button" class="btn btn--secondary" (click)="createModal.close()">Cancelar</button>
+      </div>
+    </form>
+  </app-modal>
+
+  <app-modal #editModal title="Editar usuario" maxWidth="600px">
+    <form class="grid-form" [formGroup]="editForm" (ngSubmit)="submitEdit()">
+      <p style="margin-bottom: 1.5rem; color: #64748b;">{{ editingUser()?.email }}</p>
+
+      <label class="form-field">
+        <span>Nombre</span>
+        <input type="text" formControlName="nombre" />
+      </label>
+
+      <label class="form-field">
+        <span>Apellido</span>
+        <input type="text" formControlName="apellido" />
+      </label>
+
+      <label class="form-field">
+        <span>Celular</span>
+        <input type="text" formControlName="celular" />
+      </label>
+
+      <div class="form-actions form-field--full" style="margin-top: 1rem;">
+        <button type="submit" class="btn btn--primary" [disabled]="actionUserId() === editingUser()?.id">Guardar cambios</button>
+        <button type="button" class="btn btn--secondary" (click)="cancelEdit()">Cancelar</button>
+      </div>
+    </form>
+  </app-modal>
+
+  <app-modal #deleteModal title="Confirmar eliminación" maxWidth="400px">
+    <div style="text-align: center;">
+      <p style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #1e293b;">
+        ¿Estás seguro de que deseas eliminar al usuario <strong>{{ deletingUser()?.nombre }} {{ deletingUser()?.apellido }}</strong>?
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button type="button" class="btn button-danger" [disabled]="actionUserId() === deletingUser()?.id" (click)="submitDelete()">Sí, eliminar</button>
+        <button type="button" class="btn btn--secondary" (click)="cancelDelete()">Cancelar</button>
+      </div>
+    </div>
+  </app-modal>
+</section>

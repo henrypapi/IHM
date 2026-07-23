@@ -1,0 +1,20 @@
+<section class="incidencias-page">
+  <header class="incidencias-page__header">
+    <div>
+      <p class="incidencias-page__eyebrow">Modulo CRUD</p>
+      <h1>Incidencias</h1>
+    </div>
+  </header>
+
+  <app-incidencias-filter (filtersChanged)="onFiltersChanged($event)" />
+
+  @if (loading()) {
+    <p class="incidencias-page__feedback">Cargando incidencias...</p>
+  }
+
+  @if (errorMessage()) {
+    <p class="incidencias-page__error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <app-incidencias-table [incidencias]="incidencias()" />
+</section>

@@ -1,0 +1,34 @@
+<section class="dashboard-page">
+  <header class="dashboard-page__header">
+    <div>
+      <p class="dashboard-page__eyebrow">Panel principal</p>
+      <h1>Resumen del sistema</h1>
+      <p class="dashboard-page__subtitle">
+        {{ currentUser()?.email }} · {{ roleLabel() }}
+      </p>
+    </div>
+  </header>
+
+  <section class="dashboard-page__stats" aria-label="Resumen de indicadores">
+    @for (stat of stats(); track stat.title) {
+      <app-dashboard-stat-card [title]="stat.title" [value]="stat.value" [tone]="stat.tone" />
+    }
+  </section>
+
+  <section class="dashboard-page__grid">
+    <article class="dashboard-page__panel">
+      <h2>Estado actual</h2>
+      <p><strong>Hora del servidor:</strong> {{ serverTime() || 'Sin datos' }}</p>
+      <p><strong>Categorias:</strong> {{ categoriesCount() }}</p>
+      <p><strong>Carga:</strong> {{ loading() ? 'Actualizando datos' : 'Sincronizado' }}</p>
+    </article>
+
+    <article class="dashboard-page__panel">
+      <h2>Accesos rapidos</h2>
+      <p><a routerLink="/tickets">Ir a tickets</a></p>
+      @if (isAdmin()) {
+        <p><a routerLink="/usuarios">Ir a usuarios</a></p>
+      }
+    </article>
+  </section>
+</section>

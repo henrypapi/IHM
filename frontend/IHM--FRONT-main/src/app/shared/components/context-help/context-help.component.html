@@ -1,0 +1,30 @@
+@if (isOpen()) {
+  <div id="manual-breve" class="context-help" aria-live="polite">
+    <section class="context-help__panel" role="complementary" aria-label="Manual breve de uso">
+      <div class="context-help__toolbar">
+        <div>
+          <p class="context-help__toolbar-eyebrow">Ayuda activa</p>
+          <strong>Guia visual</strong>
+        </div>
+
+        <button type="button" class="context-help__dismiss" (click)="close.emit()">Ocultar</button>
+      </div>
+
+      @for (step of steps(); track trackStep($index, step)) {
+        @if (layouts()[step.id]; as layout) {
+          <article class="context-help__callout" [ngStyle]="layout.calloutStyles">
+            <span class="context-help__arrow" [class]="layout.arrowClass"></span>
+            <p class="context-help__eyebrow">Manual breve</p>
+            <h3>{{ step.label }}</h3>
+            <p>{{ step.description }}</p>
+            <div class="context-help__actions">
+              <button type="button" class="context-help__ghost" (click)="onFocusSection(step.anchorId)">
+                Ver seccion
+              </button>
+            </div>
+          </article>
+        }
+      }
+    </section>
+  </div>
+}

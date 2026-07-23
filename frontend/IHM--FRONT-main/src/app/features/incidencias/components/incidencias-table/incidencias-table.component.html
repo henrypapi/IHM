@@ -1,0 +1,26 @@
+<div class="table-wrapper">
+  <table class="incidencias-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Titulo</th>
+        <th>Estado</th>
+        <th>Prioridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (incidencia of incidencias(); track incidencia.id) {
+        <tr>
+          <td>{{ incidencia.id }}</td>
+          <td>{{ incidencia.titulo }}</td>
+          <td>{{ incidencia.estado }}</td>
+          <td>{{ incidencia.prioridad }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="4">No hay incidencias para mostrar.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

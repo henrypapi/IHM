@@ -1,0 +1,23 @@
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.incidencias-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.incidencias-table th,
+.incidencias-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.incidencias-table th {
+  background: #f8fafc;
+  color: #334155;
+}

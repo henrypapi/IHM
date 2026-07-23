@@ -1,0 +1,52 @@
+<div class="shell">
+  <aside class="shell__sidebar" aria-label="Menu principal">
+    <div class="shell__brand">
+      <p class="shell__eyebrow">IHM</p>
+      <h1>Gestion de Incidencias</h1>
+    </div>
+
+    <nav class="shell__nav">
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Dashboard
+      </a>
+      <a routerLink="/tickets" routerLinkActive="is-active">Tickets</a>
+      <!-- @if (canCreateTicket()) {
+        <a routerLink="/tickets/crear" routerLinkActive="is-active" class="shell__nav-action">
+          Crear ticket
+        </a>
+      } -->
+      @if (isAdmin()) {
+        <a routerLink="/usuarios" routerLinkActive="is-active">Usuarios</a>
+      }
+      <a routerLink="/configuracion" routerLinkActive="is-active">Configuración</a>
+    </nav>
+  </aside>
+
+  <div class="shell__content">
+    <header class="shell__header">
+      <div>
+        <p class="shell__welcome">Sesion iniciada</p>
+        <strong>{{ fullName() }}</strong>
+        <p class="shell__welcome">
+          @if (isAdmin()) {
+            Administrador
+          } @else if (isTech()) {
+            Tecnico
+          } @else if (isUser()) {
+            Usuario
+          }
+        </p>
+      </div>
+
+      <button type="button" (click)="logout()">Cerrar sesion</button>
+    </header>
+
+    <main class="shell__main">
+      <router-outlet />
+    </main>
+  </div>
+</div>

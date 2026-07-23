@@ -1,0 +1,139 @@
+<div class="settings">
+  <header class="settings__header">
+    <h1 class="settings__title">Configuración del Sistema</h1>
+    <p class="settings__subtitle">
+      Personaliza los temas visuales, tipografía y la escala de la interfaz para tu comodidad.
+    </p>
+  </header>
+
+  <div class="settings__grid">
+    <!-- SECCIÓN: TEMA DE COLOR -->
+    <section class="settings__section card">
+      <h2 class="settings__section-title">
+        <span class="icon">🎨</span> Tema y Paleta de Colores
+      </h2>
+      <p class="settings__section-desc">
+        Selecciona un tema para personalizar la barra lateral y los elementos interactivos principales.
+      </p>
+
+      <div class="theme-grid">
+        @for (theme of themes; track theme.id) {
+          <button
+            type="button"
+            class="theme-card"
+            [class.is-active]="activeThemeId() === theme.id"
+            (click)="selectTheme(theme.id)"
+          >
+            <!-- Preview of the colors -->
+            <div class="theme-card__preview" [style.background]="'linear-gradient(135deg, ' + theme.sidebarStart + ', ' + theme.sidebarEnd + ')'">
+              <span class="theme-card__badge" [style.background]="theme.primary"></span>
+              <span class="theme-card__accent" [style.background]="theme.sidebarAccent"></span>
+            </div>
+            
+            <div class="theme-card__info">
+              <span class="theme-card__name">{{ theme.name }}</span>
+              @if (activeThemeId() === theme.id) {
+                <span class="theme-card__status-active">Activo</span>
+              }
+            </div>
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- SECCIÓN: FUENTES -->
+    <section class="settings__section card">
+      <h2 class="settings__section-title">
+        <span class="icon">✍️</span> Tipografía
+      </h2>
+      <p class="settings__section-desc">
+        Cambia la fuente principal de los textos de la plataforma para mejorar la legibilidad.
+      </p>
+
+      <div class="font-list">
+        @for (font of fonts; track font.id) {
+          <button
+            type="button"
+            class="font-card"
+            [class.is-active]="activeFontId() === font.id"
+            (click)="selectFont(font.id)"
+            [style.font-family]="font.family"
+          >
+            <div class="font-card__content">
+              <span class="font-card__preview">Aa</span>
+              <div class="font-card__details">
+                <strong class="font-card__name">{{ font.name }}</strong>
+                <span class="font-card__sample">Así se verá el texto del sistema.</span>
+              </div>
+            </div>
+            @if (activeFontId() === font.id) {
+              <span class="font-card__status-active">✓</span>
+            }
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- SECCIÓN: ESCALA DE FUENTE / ZOOM -->
+    <section class="settings__section card full-width">
+      <h2 class="settings__section-title">
+        <span class="icon">🔍</span> Tamaño de Interfaz
+      </h2>
+      <p class="settings__section-desc">
+        Aumenta o disminuye el tamaño de los textos e íconos del sistema para una visualización confortable.
+      </p>
+
+      <div class="scale-control">
+        <div class="scale-control__actions">
+          <button
+            type="button"
+            class="btn btn--secondary btn--icon"
+            (click)="adjustScale(-0.05)"
+            [disabled]="fontScale() <= 0.85"
+            title="Reducir tamaño"
+          >
+            A-
+          </button>
+          
+          <div class="scale-control__gauge">
+            <span class="scale-control__percentage">{{ (fontScale() * 100).toFixed(0) }}%</span>
+            <div class="scale-control__track">
+              <div class="scale-control__fill" [style.width]="((fontScale() - 0.85) / (1.3 - 0.85) * 100) + '%'"></div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn--secondary btn--icon"
+            (click)="adjustScale(0.05)"
+            [disabled]="fontScale() >= 1.3"
+            title="Aumentar tamaño"
+          >
+            A+
+          </button>
+        </div>
+
+        <div class="scale-presets">
+          <button type="button" class="preset-btn" [class.is-active]="fontScale() === 0.9" (click)="setScale(0.9)">90% (Compacto)</button>
+          <button type="button" class="preset-btn" [class.is-active]="fontScale() === 1.0" (click)="setScale(1.0)">100% (Normal)</button>
+          <button type="button" class="preset-btn" [class.is-active]="fontScale() === 1.1" (click)="setScale(1.1)">110% (Mediano)</button>
+          <button type="button" class="preset-btn" [class.is-active]="fontScale() === 1.2" (click)="setScale(1.2)">120% (Grande)</button>
+          <button type="button" class="preset-btn" [class.is-active]="fontScale() === 1.3" (click)="setScale(1.3)">130% (Accesible)</button>
+        </div>
+
+        <!-- Muestra dinámica -->
+        <div class="scale-preview">
+          <p class="scale-preview__title">Vista previa en tiempo real</p>
+          <div class="scale-preview__box">
+            <h3>Título de un Panel</h3>
+            <p>Este es un texto demostrativo para visualizar cómo escala el contenido en toda la interfaz de usuario.</p>
+            <div class="scale-preview__buttons">
+              <button type="button" class="btn btn--primary" style="background-color: var(--color-primary);">Botón Primario</button>
+              <button type="button" class="btn btn--secondary">Botón Secundario</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

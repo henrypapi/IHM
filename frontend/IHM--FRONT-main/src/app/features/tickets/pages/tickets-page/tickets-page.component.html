@@ -1,0 +1,328 @@
+<section class="tickets-page">
+  <header id="tickets-overview" class="tickets-hero panel panel--hero" tabindex="-1">
+    <div class="tickets-hero__copy">
+      <p class="tickets-page__eyebrow">Interacción hombre máquina inclusiva</p>
+      <h1>{{ pageTitle() }}</h1>
+      <p class="tickets-hero__description">
+        {{ pageDescription() }}
+      </p>
+
+      <div class="tickets-hero__role">
+        <span>Perfil activo</span>
+        <strong>{{ roleLabel() }}</strong>
+      </div>
+
+      @if (canCreateTicket()) {
+        <div class="tickets-hero__actions">
+          <button type="button" class="btn btn--primary" id="tickets-create-btn" (click)="startCreate()">
+            Crear ticket
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="tickets-hero__stats" aria-label="Indicadores principales">
+      @for (stat of stats(); track stat.label) {
+        <article class="stat-card">
+          <span>{{ stat.label }}</span>
+          <strong>{{ stat.value }}</strong>
+          <p>{{ stat.detail }}</p>
+        </article>
+      }
+    </div>
+  </header>
+
+  @if (successMessage()) {
+    <p class="feedback feedback--success" aria-live="polite">{{ successMessage() }}</p>
+  }
+
+  @if (errorMessage()) {
+    <p class="feedback feedback--error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <section
+    id="tickets-list"
+    class="panel section-highlight"
+    [class.section-highlight--active]="helpOpen()"
+    tabindex="-1"
+  >
+    <div class="panel__header panel__header--split">
+      <div>
+        <h2>Bandeja de tickets</h2>
+        <p>{{ filteredTickets().length }} ticket(s) visibles de {{ tickets().length }} cargado(s).</p>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn--secondary"
+        (click)="clearFilters()"
+        [disabled]="!searchTerm() && statusFilter() === 'ALL' && priorityFilter() === 'ALL'"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+
+    <div class="filters-bar" aria-label="Filtros de tickets">
+      <label class="form-field filters-bar__search">
+        <span>Buscar</span>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          (input)="updateSearchTerm($event)"
+          placeholder="Título, categoría, creador o estado"
+        />
+      </label>
+
+      <label class="form-field">
+        <span>Estado</span>
+        <select [value]="statusFilter()" (change)="updateStatusFilter($any($event.target).value)">
+          <option value="ALL">Todos</option>
+          @for (status of availableStatuses(); track status) {
+            <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="form-field">
+        <span>Prioridad</span>
+        <select [value]="priorityFilter()" (change)="updatePriorityFilter($any($event.target).value)">
+          <option value="ALL">Todas</option>
+          @for (priority of availablePriorities(); track priority) {
+            <option [value]="priority">{{ priority }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (loading()) {
+      <p class="feedback">Cargando tickets...</p>
+    } @else {
+      <div class="tickets-list">
+        @for (ticket of filteredTickets(); track ticket.id) {
+          <article class="ticket-card">
+            <div class="ticket-card__topline">
+              <div>
+                <p class="ticket-card__id">Ticket #{{ ticket.id }}</p>
+                <h3>{{ ticket.titulo }}</h3>
+              </div>
+
+              <div class="ticket-card__badges">
+                <span class="ticket-badge" [class]="statusClass(ticket.estado)">
+                  {{ ticket.estado || 'Sin estado' }}
+                </span>
+                <span class="ticket-badge" [class]="priorityClass(ticket.prioridad)">
+                  {{ ticket.prioridad || 'Sin prioridad' }}
+                </span>
+              </div>
+            </div>
+
+            <p class="ticket-card__description">
+              {{ ticket.descripcion || 'No se recibió descripción adicional.' }}
+            </p>
+
+            <dl class="ticket-card__meta">
+              <div>
+                <dt>Categoría</dt>
+                <dd>{{ ticket.categoriaNombre || '-' }}</dd>
+              </div>
+              <div>
+                <dt>Solicitante</dt>
+                <dd>{{ ticket.creadorNombre || '-' }}</dd>
+              </div>
+              <div>
+                <dt>Asignado a</dt>
+                <dd>{{ ticket.asignadoNombre || 'Pendiente de asignación' }}</dd>
+              </div>
+              <div>
+                <dt>Creado</dt>
+                <dd>{{ formatDate(ticket.fechaCreacion) }}</dd>
+              </div>
+            </dl>
+
+            <div class="ticket-card__actions">
+              @if (isAdmin() && !isResolved(ticket)) {
+                <button
+                  type="button"
+                  class="btn btn--primary btn--small"
+                  (click)="startAssign(ticket)"
+                  [disabled]="actionTicketId() === ticket.id"
+                >
+                  Asignar
+                </button>
+              }
+
+              @if ((isTech() || isAdmin()) && !isResolved(ticket)) {
+                <button
+                  type="button"
+                  class="btn btn--secondary btn--small"
+                  (click)="startComplete(ticket)"
+                  [disabled]="actionTicketId() === ticket.id"
+                >
+                  Culminar
+                </button>
+              }
+
+              @if (canDelete(ticket)) {
+                <button
+                  type="button"
+                  class="btn button-danger btn--small"
+                  (click)="startDelete(ticket)"
+                  [disabled]="actionTicketId() === ticket.id"
+                >
+                  Eliminar
+                </button>
+              }
+            </div>
+          </article>
+        } @empty {
+          <article class="ticket-empty" aria-live="polite">
+            <h3>No hay tickets para mostrar</h3>
+            <p>Ajusta los filtros o crea una nueva incidencia para empezar.</p>
+          </article>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Modals -->
+  <app-modal #createModal title="Nuevo Ticket" maxWidth="800px">
+    <form class="create-ticket" [formGroup]="createForm" (ngSubmit)="submitCreate()">
+      <div class="create-ticket__workspace">
+        <label class="form-field">
+          <span>Título</span>
+          <input
+            type="text"
+            formControlName="titulo"
+            placeholder="No puedo ingresar al sistema"
+            aria-describedby="create-title-hint"
+          />
+          <small id="create-title-hint" class="field-hint">
+            Usa una frase concreta para que soporte identifique el problema rápido.
+          </small>
+          @if (hasCreateFieldError('titulo')) {
+            <small class="field-error">Ingresa un título válido (mínimo 5 caracteres).</small>
+          }
+        </label>
+
+        <label class="form-field">
+          <span>Descripción</span>
+          <textarea
+            formControlName="descripcion"
+            rows="6"
+            placeholder="Describe qué ocurre, desde cuándo pasa y qué impacto tiene en tu trabajo."
+            aria-describedby="create-description-hint"
+          ></textarea>
+          <small id="create-description-hint" class="field-hint">
+            Incluye contexto, pasos para reproducir el problema y cualquier dato relevante.
+          </small>
+          @if (hasCreateFieldError('descripcion')) {
+            <small class="field-error">La descripción debe tener al menos 10 caracteres.</small>
+          }
+        </label>
+        
+        <label class="form-field">
+          <span>Categoría</span>
+          <select formControlName="categoriaId">
+            <option [value]="0">Selecciona una categoría</option>
+            @for (category of categories(); track category.id) {
+              <option [value]="category.id">{{ category.nombre }}</option>
+            }
+          </select>
+          @if (hasCreateFieldError('categoriaId')) {
+            <small class="field-error">Selecciona una categoría.</small>
+          }
+        </label>
+        
+        <div class="form-actions form-field--full" style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn--secondary" (click)="createModal.close()">Cancelar</button>
+          <button type="submit" class="btn btn--primary" [disabled]="submittingCreate()">
+            {{ submittingCreate() ? 'Enviando...' : 'Crear ticket' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </app-modal>
+
+  <app-modal #assignModal title="Asignar Ticket" maxWidth="500px">
+    <form class="grid-form" [formGroup]="assignmentForm" (ngSubmit)="submitAssign()">
+      <p style="margin-bottom: 1.5rem; color: #64748b;">
+        Asignando el Ticket <strong>#{{ activeTicket()?.id }} - {{ activeTicket()?.titulo }}</strong>
+      </p>
+
+      <label class="form-field">
+        <span>Técnico</span>
+        <select formControlName="idUsuarioAsignado">
+          <option [value]="0">Selecciona un técnico</option>
+          @for (technician of technicians(); track technician.id) {
+            <option [value]="technician.id">
+              {{ technician.nombre }} {{ technician.apellido }}
+            </option>
+          }
+        </select>
+        @if (hasAssignmentFieldError('idUsuarioAsignado')) {
+          <small class="field-error">Selecciona un técnico antes de asignar.</small>
+        }
+      </label>
+
+      <label class="form-field">
+        <span>Prioridad</span>
+        <select formControlName="prioridad">
+          <option value="">Selecciona prioridad</option>
+          @for (priority of options().prioridades; track priority) {
+            <option [value]="priority">{{ priority }}</option>
+          }
+        </select>
+        @if (hasAssignmentFieldError('prioridad')) {
+          <small class="field-error">Selecciona una prioridad válida.</small>
+        }
+      </label>
+
+      <div class="form-actions form-field--full" style="margin-top: 1rem;">
+        <button type="submit" class="btn btn--primary" [disabled]="actionTicketId() === activeTicket()?.id">Asignar ticket</button>
+        <button type="button" class="btn btn--secondary" (click)="assignModal.close()">Cancelar</button>
+      </div>
+    </form>
+  </app-modal>
+
+  <app-modal #completeModal title="Culminar Ticket" maxWidth="400px">
+    <div style="text-align: center;">
+      <p style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #1e293b;">
+        ¿Estás seguro de que deseas marcar como resuelto el ticket <strong>#{{ activeTicket()?.id }} - {{ activeTicket()?.titulo }}</strong>?
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button type="button" class="btn btn--primary" [disabled]="actionTicketId() === activeTicket()?.id" (click)="submitComplete()">Sí, culminar</button>
+        <button type="button" class="btn btn--secondary" (click)="completeModal.close()">Cancelar</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <app-modal #deleteModal title="Confirmar eliminación" maxWidth="400px">
+    <div style="text-align: center;">
+      <p style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #1e293b;">
+        ¿Estás seguro de que deseas eliminar el ticket <strong>#{{ activeTicket()?.id }} - {{ activeTicket()?.titulo }}</strong>? Esta acción no se puede deshacer.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button type="button" class="btn button-danger" [disabled]="actionTicketId() === activeTicket()?.id" (click)="submitDelete()">Sí, eliminar</button>
+        <button type="button" class="btn btn--secondary" (click)="deleteModal.close()">Cancelar</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <button
+    type="button"
+    class="floating-help-button"
+    [attr.aria-expanded]="helpOpen()"
+    aria-controls="manual-breve"
+    (click)="toggleHelp()"
+  >
+    {{ helpOpen() ? 'Ocultar ayuda' : 'Ayuda guiada' }}
+  </button>
+
+  <app-context-help
+    [isOpen]="helpOpen()"
+    [layouts]="helpLayouts()"
+    [steps]="helpSteps()"
+    (close)="closeHelp()"
+    (focusSection)="focusSection($event)"
+  />
+</section>

@@ -1,0 +1,18 @@
+<dialog 
+  #dialogElement 
+  class="modal" 
+  [style.max-width]="maxWidth"
+  (close)="onDialogClose()"
+  (click)="onBackdropClick($event)">
+  <div class="modal__content" (click)="$event.stopPropagation()">
+    <header class="modal__header">
+      <h2 class="modal__title">{{ title }}</h2>
+      <button type="button" class="modal__close-btn" (click)="close()" aria-label="Cerrar">
+        &times;
+      </button>
+    </header>
+    <div class="modal__body">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</dialog>

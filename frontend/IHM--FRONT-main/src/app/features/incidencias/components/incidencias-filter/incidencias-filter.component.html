@@ -1,0 +1,12 @@
+<form class="filters" [formGroup]="form" (ngSubmit)="applyFilters()">
+  <input type="text" formControlName="search" placeholder="Buscar por titulo" />
+
+  <select formControlName="estado">
+    <option value="">Todos los estados</option>
+    <option value="ABIERTA">Abierta</option>
+    <option value="EN_PROGRESO">En progreso</option>
+    <option value="RESUELTA">Resuelta</option>
+  </select>
+
+  <button type="submit">Filtrar</button>
+</form>

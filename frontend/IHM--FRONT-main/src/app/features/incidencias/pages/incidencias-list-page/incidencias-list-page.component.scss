@@ -1,0 +1,22 @@
+.incidencias-page__header h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.9rem, 3vw, 2.6rem);
+}
+
+.incidencias-page__eyebrow {
+  margin: 0 0 0.35rem;
+  color: #0f766e;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.incidencias-page__feedback,
+.incidencias-page__error {
+  margin: 1rem 0;
+}
+
+.incidencias-page__error {
+  color: #b91c1c;
+}
