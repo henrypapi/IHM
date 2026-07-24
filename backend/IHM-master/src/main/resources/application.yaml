@@ -3,7 +3,7 @@ spring:
     name: project
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ihm_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: jdbc:mysql://gateway01.us-east-1.prod.aws.tidbcloud.com:4000/ihm_db?useSSL=true&requireSSL=true&serverTimezone=-05:00&useUnicode=true&characterEncoding=UTF-8
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:root}
 
@@ -11,3 +11,4 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+    database-platform: org.hibernate.dialect.MySQLDialect
