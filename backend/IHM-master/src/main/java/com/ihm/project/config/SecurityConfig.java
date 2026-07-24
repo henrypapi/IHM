@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -37,7 +38,10 @@ public class SecurityConfig {
                 .csrf(crsf -> crsf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login").permitAll()
+                        // 1. Permitir siempre el preflight de CORS de Angular
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // 2. Liberar todo el controlador de Auth (login, register, etc)
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -50,7 +54,12 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "https://ef63-38-25-22-161.ngrok-free.app", "https://ihm-p1irucv9r-henrypapis-projects.vercel.app", "https://ihm-ebon.vercel.app"));
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:5173", 
+                "https://ef63-38-25-22-161.ngrok-free.app", 
+                "https://ihm-p1irucv9r-henrypapis-projects.vercel.app", 
+                "https://ihm-ebon.vercel.app"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
