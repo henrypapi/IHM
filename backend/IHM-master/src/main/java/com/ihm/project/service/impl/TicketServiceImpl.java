@@ -128,20 +128,26 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Transactional
     public void culminarTicket(Long ticketId) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontro el ticket con ID: " + ticketId));
+    Ticket ticket = ticketRepository.findById(ticketId)
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontro el ticket con ID: " + ticketId));
 
-        Usuario tecnicoLogueado = getAuthenticatedUser();
-        if (ticket.getUsuarioAsignado() == null ||
-                !ticket.getUsuarioAsignado().getId().equals(tecnicoLogueado.getId())) {
-            throw new ForbiddenOperationException(
-                    "No tienes permisos para culminar este ticket porque no te esta asignado.");
-        }
+    Usuario tecnicoLogueado = getAuthenticatedUser();
+    
+    // 1. Verificamos si el usuario actual es un Administrador
+    boolean isAdmin = tecnicoLogueado.getRoles().stream()
+            .anyMatch(role -> role.getRol().getName().equals("ROLE_ADMIN"));
 
-        ticket.setEstado(Estado.RESUELTO);
-        ticket.setFechaCulminacion(LocalDateTime.now());
-        ticketRepository.save(ticket);
+    // 2. Si NO es administrador, aplicamos la regla estricta: solo puede cerrar sus propios tickets
+    if (!isAdmin && (ticket.getUsuarioAsignado() == null || 
+            !ticket.getUsuarioAsignado().getId().equals(tecnicoLogueado.getId()))) {
+        throw new ForbiddenOperationException(
+                "No tienes permisos para culminar este ticket porque no te esta asignado.");
     }
+
+    ticket.setEstado(Estado.RESUELTO);
+    ticket.setFechaCulminacion(LocalDateTime.now());
+    ticketRepository.save(ticket);
+}
 
     private Usuario getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
