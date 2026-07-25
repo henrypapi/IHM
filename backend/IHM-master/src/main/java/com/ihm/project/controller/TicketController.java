@@ -113,11 +113,19 @@ public class TicketController {
     }
 
     private void requireAnyRole(String... roles) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean allowed = authentication.getAuthorities().stream()
-                .anyMatch(authority -> java.util.Arrays.asList(roles).contains(authority.getAuthority()));
-        if (!allowed) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para este recurso.");
-        }
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    
+    // Capturamos los roles exactos que Spring Security está leyendo
+    String misRoles = authentication.getAuthorities().toString();
+    
+    boolean allowed = authentication.getAuthorities().stream()
+            .anyMatch(authority -> java.util.Arrays.asList(roles).contains(authority.getAuthority()));
+            
+    if (!allowed) {
+        // Hacemos que el error imprima la evidencia
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+            "Acceso denegado. Se requiere: " + java.util.Arrays.toString(roles) + 
+            " | Pero tus roles actuales son: " + misRoles);
     }
+}
 }
